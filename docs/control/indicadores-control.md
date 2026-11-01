@@ -17,7 +17,7 @@ Este documento define **cómo se controla** el sistema de RR.HH. una vez desarro
 | 3. Comparar | Contrastar el valor real con el estándar | "Semáforo de desvío" |
 | 4. Corregir | Actuar sobre el desvío | "Acción correctiva" |
 
-Los estándares 1 a 3 provienen de las **metas cuantitativas de la Entrega 2**. Los estándares 4 a 6 se incorporan en la Entrega 4 para cubrir la seguridad industrial, la calidad de los datos y el cumplimiento del cronograma.
+Los estándares 1 a 3 provienen de las **metas cuantitativas de la Entrega 2**. Los estándares 4 a 7 se incorporan en la Entrega 4 para cubrir la seguridad industrial, la calidad de los datos, el cumplimiento del cronograma y la autorización de las horas extra (el 7 deriva del criterio de aceptación de la HU2).
 
 ---
 
@@ -31,6 +31,7 @@ Los estándares 1 a 3 provienen de las **metas cuantitativas de la Entrega 2**. 
 | 4 | Operarios con capacitación vigente en puestos críticos | 100 % | Diaria | Seguridad e Higiene | HU3 · BPMN |
 | 5 | Errores de carga en asistencia y horas extra | < 1 % | Mensual | Jefe de planta / RR.HH. | HU2 · BPMN |
 | 6 | Cumplimiento del cronograma | ≤ 12 semanas (razón ≤ 1) | Semanal | Líder de proyecto | Gantt (Ent. 2) |
+| 7 | Horas extra autorizadas | 100 % | Diaria, al cierre de la jornada | Jefe de planta | HU2 · BPMN |
 
 ---
 
@@ -43,7 +44,7 @@ Los estándares 1 a 3 provienen de las **metas cuantitativas de la Entrega 2**. 
 | **Qué mide** | Rapidez con la que el sistema consolida asistencia y horas extra del mes. |
 | **Fórmula** | Tiempo de respuesta (segundos) entre la solicitud del reporte y su visualización completa. |
 | **Fuente de datos** | Entidad `REGISTRO_ASISTENCIA` (campos `fecha`, `estado_asistencia`, `horas_extra`). |
-| **Método de medición** | Ejecutar el reporte 5 veces con una base de prueba de 500 colaboradores y tomar el **promedio**. |
+| **Método de medición** | Ejecutar el reporte 5 veces con una base de prueba de **datos sintéticos** de 500 colaboradores y tomar el **promedio**. Se usan datos sintéticos porque el FODA reconoce no contar con un entorno de pruebas equivalente al de producción. |
 | **Estándar** | ≤ 3 segundos. |
 | **Frecuencia** | En cada cierre mensual (y en las pruebas de carga de la fase 4.1 del Gantt). |
 | **Responsable** | Equipo técnico / Especialista QA. |
@@ -153,6 +154,27 @@ Los estándares 1 a 3 provienen de las **metas cuantitativas de la Entrega 2**. 
 
 ---
 
+### Indicador 7 — Horas extra autorizadas
+
+| Campo | Detalle |
+|---|---|
+| **Qué mide** | Que todas las horas extra realizadas hayan sido revisadas y autorizadas por el Jefe de planta antes de llegar a la liquidación. |
+| **Fórmula** | (Empleados con horas extra autorizadas ÷ empleados con horas extra detectadas) × 100 |
+| **Fuente de datos** | Entidad `REGISTRO_ASISTENCIA` (`horas_extra`) y la autorización registrada en la tarea «Revisar y autorizar horas extra» del BPMN. La autorización no figura en el diccionario actual (ver sección 5). |
+| **Método de medición** | Al cierre de cada jornada, comparar los empleados con `horas_extra` > 0 contra los que tienen la autorización registrada. |
+| **Estándar** | 100 % (criterio de aceptación de la HU2). |
+| **Frecuencia** | Diaria, al cierre de la jornada. |
+| **Responsable** | Jefe de planta. |
+| **Acción correctiva** | Excluir del cómputo las horas no autorizadas (compuerta «¿Horas autorizadas?» del BPMN), reforzar el control con el Jefe de planta y revisar los casos recurrentes. |
+
+| Semáforo | Condición |
+|---|---|
+| 🟢 Verde | 100 % |
+| 🟡 Amarillo | Hay horas extra pendientes de autorización dentro del plazo de cierre |
+| 🔴 Rojo | Hay horas extra realizadas sin autorización al cierre del mes |
+
+---
+
 ## 4. Mecanismo de auditoría técnica
 
 1. **Medición:** cada responsable registra el valor real en la planilla de la sección 6, con la fecha y la fuente de los datos.
@@ -173,9 +195,10 @@ Para medir estos indicadores, el sistema debería registrar datos que **hoy no f
 |---|---|---|
 | 3 | Registro de accesos de los usuarios | Agregar una entidad `REGISTRO_ACCESO` (`id_usuario`, `fecha_hora`). |
 | 5 | Historial de modificaciones de asistencia | Agregar un campo `fecha_modificacion` en `REGISTRO_ASISTENCIA` o una entidad de auditoría. |
-| 4 | Fecha de realización del curso | Agregar `fecha_realizacion` en `CAPACITACION_SEGURIDAD`. |
+| 7 | Autorización de las horas extra | Agregar un campo `autorizacion_horas_extra` (Boolean) en `REGISTRO_ASISTENCIA`. |
+| 4 | Fecha de realización del curso | Ya incorporada: `fecha_realizacion` en `CAPACITACION_SEGURIDAD`. |
 
-Además, el campo `horas_extra` está definido como `Integer`, por lo que no admite fracciones de hora. Si se cambia, debe actualizarse también el cálculo del indicador 1.
+Los campos `hora_ingreso` y `hora_egreso` ya fueron incorporados en el diccionario como ampliación futura. Además, el campo `horas_extra` está definido como `Integer`, por lo que no admite fracciones de hora. Si se cambia, debe actualizarse también el cálculo del indicador 1.
 
 ---
 
