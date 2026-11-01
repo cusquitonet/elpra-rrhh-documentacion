@@ -9,13 +9,13 @@
 | **Integrantes** | Cristian Ahumada · Tomas Ahumada |
 | **Docente titular** | Prof. Gabriela Martínez |
 | **Docente tutor** | Ricciuto María Lourdes |
-| **Tablero de gestión** | [GitHub Projects](COMPLETAR_URL_DEL_TABLERO) |
+| **Tablero de gestión** | [GitHub Projects](https://github.com/users/cusquitonet/projects/3) |
 
 ---
 
 ## 1. Descripción del sistema
 
-**Baterías Elpra S.A.** es una empresa industrial dedicada al reciclado de baterías, la comercialización de plomo procesado (lingotes o conos) y de plástico molido recuperado. Cuenta además con la unidad **Elpra Electric**, que ensambla y comercializa motos eléctricas. La fabricación de baterías nuevas está **tercerizada** a proveedores externos.
+**Baterías Elpra S.A.** es una empresa industrial dedicada al reciclado de baterías, la comercialización de plomo procesado (lingotes o conos) y de plástico molido recuperado. Cuenta además con la unidad **Elpra Electric**, que ensambla y comercializa motos eléctricas. La fabricación de baterías nuevas está **tercerizada**: Elpra entrega el plomo que recicla como materia prima al fabricante externo y luego comercializa las baterías.
 
 Hoy la gestión del personal se realiza con planillas de Excel desarticuladas. Este proyecto propone un **software centralizado de Recursos Humanos** que:
 
@@ -46,7 +46,8 @@ Este repositorio aloja la **documentación técnica** del proyecto (no el códig
     │   ├── proceso-asistencia.bpmn
     │   └── proceso-asistencia.png
     └── control/
-        └── indicadores-control.md
+        ├── indicadores-control.md
+        └── tablero-1.png, tablero-2.png, tablero-3.png
 ```
 
 ## 3. Resumen de las entregas
@@ -74,21 +75,23 @@ Es el proceso que el software automatiza y el que integra las tres entidades del
 | Elemento | Detalle |
 |---|---|
 | **Pool 1** | Baterías Elpra S.A. |
-| **Lanes** | Operario · Sistema RR.HH. (automatizado) · Jefe de planta · Seguridad e Higiene · Finanzas / Liquidación |
+| **Lanes** | Operario · Sistema RR.HH. (automatizado) · Jefe de planta · Recursos Humanos · Seguridad e Higiene · Finanzas / Liquidación |
 | **Pool 2 (externo)** | Proveedor de capacitaciones de seguridad (pool colapsado, conectado por flujo de mensaje) |
 
 ### Flujo estándar
 
-Inicio de jornada → Fichar ingreso → Validar legajo → Verificar capacitación vigente → Registrar asistencia → Cierre mensual → Generar reporte mensual → Liquidar haberes → Fin.
+Inicio de jornada → Fichar ingreso → Validar legajo → Verificar capacitación vigente → Registrar asistencia de ingreso → Fichar egreso → Calcular horas trabajadas y detectar horas extra → Cierre mensual → Generar reporte mensual → Revisar y validar el reporte (RR.HH.) → Liquidar haberes → Fin.
 
 ### Compuertas de decisión (excepciones)
 
 | Compuerta | Si la respuesta es "No" |
 |---|---|
-| **¿Legajo válido?** | Se rechaza el fichaje y el proceso finaliza. |
-| **¿Capacitación vigente?** | El sistema bloquea los puestos críticos y genera una alerta. En paralelo, Seguridad e Higiene gestiona la renovación (mensaje al proveedor externo) y la asistencia se registra igualmente. |
+| **¿Legajo válido?** | Se rechaza el fichaje y RR.HH. regulariza el legajo (fin: *Legajo regularizado*). |
+| **¿Capacitación vigente?** | El sistema bloquea los puestos críticos y genera una alerta. En paralelo (compuerta paralela), Seguridad e Higiene gestiona la renovación (mensaje al proveedor externo) y la asistencia se registra igualmente. |
 | **¿Hubo horas extra?** | El flujo continúa directamente al cierre mensual. |
 | **¿Horas autorizadas?** | Las horas extra se excluyen del cómputo y el flujo continúa al cierre mensual. |
+
+> **Versión 2 del diagrama:** se agregó la lane de Recursos Humanos (regularización de legajos y validación del reporte mensual) y el fichaje de egreso, de modo que las horas extra se calculan al finalizar la jornada y no al ingresar.
 
 ---
 
@@ -123,26 +126,29 @@ Formato: `tipo: descripción en presente e imperativo`
 
 | PR | Descripción | Autor | Revisor | Estado |
 |---|---|---|---|---|
-| COMPLETAR | COMPLETAR | COMPLETAR | COMPLETAR |
+| [#1](https://github.com/cusquitonet/elpra-rrhh-documentacion/pull/1) | Reemplazo de versiones de varios archivos con errores o inconsistencias por versiones corregidas (commit `bd1da10`) | Cristian Ahumada | Tomas Ahumada | Aprobado y mergeado |
+| [#2](https://github.com/cusquitonet/elpra-rrhh-documentacion/pull/2) | Reemplazo de versiones de varios archivos con errores o inconsistencias por versiones corregidas (commit `1c93bc9`) | Tomas Ahumada | Cristian Ahumada | Aprobado y mergeado |
+
+Ambos Pull Requests recibieron comentarios de los dos integrantes. Como los cambios consistían en reemplazar versiones de varios archivos por versiones corregidas, comparar cada archivo con su versión anterior simplificó verificar que las correcciones se aplicaran bien. [Ver PRs cerrados](https://github.com/cusquitonet/elpra-rrhh-documentacion/pulls?q=is%3Apr+state%3Aclosed).
 
 ---
 
 ## 6. Gestión del backlog ágil
 
-Tablero: [**GitHub Projects**](https://github.com/cusquitonet/elpra-rrhh-documentacion/projects), con las columnas **Por Hacer → En Progreso → Listo**. Cada historia de usuario es un *Issue* del repositorio vinculado al tablero.
+Tablero: [**GitHub Projects**](https://github.com/users/cusquitonet/projects/3), con las columnas **Por Hacer → En Progreso → Listo**. Cada historia de usuario es un *Issue* del repositorio vinculado al tablero.
 
 | ID | Historia de usuario | Issue | Estado |
 |---|---|---|---|
-| **HU1** | **Como** analista de RR.HH., **quiero** registrar y consultar los legajos de los empleados en un único sistema, **para** eliminar las planillas de Excel desarticuladas y contar con datos confiables. | [Gestion Centralizada de legajos](https://github.com/cusquitonet/elpra-rrhh-documentacion/issues/1#issue-6142836780) |
-| **HU2** | **Como** jefe de planta, **quiero** registrar la asistencia y las horas extra diarias de mi personal, **para** que Finanzas liquide los haberes sin errores de transcripción. | [Registro de asistencia y horas extra](https://github.com/cusquitonet/elpra-rrhh-documentacion/issues/2#issue-6142842249) |
-| **HU3** | **Como** responsable de Seguridad e Higiene, **quiero** ser alertado de las capacitaciones vencidas y restringir la asignación a puestos críticos, **para** cumplir las auditorías y prevenir riesgos por manejo de plomo y ácido. | [Alertas de capacitaciones vencidas](https://github.com/cusquitonet/elpra-rrhh-documentacion/issues/3#issue-6142855333) |
+| **HU1** | **Como** analista de RR.HH., **quiero** registrar y consultar los legajos de los empleados en un único sistema, **para** eliminar las planillas de Excel desarticuladas y contar con datos confiables. | [#1](https://github.com/cusquitonet/elpra-rrhh-documentacion/issues/1) | Listo |
+| **HU2** | **Como** jefe de planta, **quiero** registrar la asistencia y las horas extra diarias de mi personal, **para** que Finanzas liquide los haberes sin errores de transcripción. | [#2](https://github.com/cusquitonet/elpra-rrhh-documentacion/issues/2) | Listo |
+| **HU3** | **Como** responsable de Seguridad e Higiene, **quiero** ser alertado de las capacitaciones vencidas y restringir la asignación a puestos críticos, **para** cumplir las auditorías y prevenir riesgos por manejo de plomo y ácido. | [#3](https://github.com/cusquitonet/elpra-rrhh-documentacion/issues/3) | Listo |
 
 ### Trazabilidad con el modelo
 
 | Historia | Entidad del diccionario de datos | Tareas del BPMN |
 |---|---|---|
-| HU1 | `LEGAJO_EMPLEADO` | Validar legajo del empleado |
-| HU2 | `REGISTRO_ASISTENCIA` | Registrar asistencia · Revisar y autorizar horas extra · Registrar horas extra autorizadas |
+| HU1 | `LEGAJO_EMPLEADO` | Validar legajo del empleado · Regularizar legajo |
+| HU2 | `REGISTRO_ASISTENCIA` | Registrar asistencia de ingreso · Fichar egreso · Calcular horas · Revisar y autorizar horas extra · Registrar horas extra autorizadas |
 | HU3 | `CAPACITACION_SEGURIDAD` | Verificar capacitación vigente · Bloquear puestos críticos · Gestionar renovación |
 
 ### Evidencia de seguimiento
@@ -154,8 +160,6 @@ Capturas del tablero en distintos momentos del proyecto:
 | Backlog inicial (todo en *Por Hacer*) | `docs/control/tablero-1.png` |
 | Trabajo en curso (*En Progreso*) | `docs/control/tablero-2.png` |
 | Cierre de la entrega (*Listo*) | `docs/control/tablero-3.png` |
-
-
 
 ---
 
@@ -171,8 +175,11 @@ El control sigue el ciclo de la etapa de Dirección y Control: **fijar un están
 | 4 | Operarios con capacitación vigente en puestos críticos | (Operarios habilitados ÷ operarios en puestos críticos) × 100 | 100 % | Diaria | Seguridad e Higiene | Bloqueo automático y alerta de renovación |
 | 5 | Errores de carga en asistencia y horas extra | (Registros corregidos ÷ registros totales) × 100 | < 1 % | Mensual | Jefe de planta / RR.HH. | Revisar validaciones del sistema |
 | 6 | Cumplimiento del cronograma | Semanas reales ÷ semanas planificadas | ≤ 12 semanas | Semanal | Líder de proyecto | Replanificar tareas según el Gantt |
+| 7 | Horas extra autorizadas | (Empleados con horas extra autorizadas ÷ empleados con horas extra detectadas) × 100 | 100 % | Diaria, al cierre de la jornada | Jefe de planta | Excluir las horas no autorizadas y reforzar el control |
 
-> Los indicadores 1 a 3 derivan de las metas cuantitativas de la Entrega 2. Los indicadores 4 a 6 se incorporan en esta entrega para cubrir seguridad, calidad de datos y seguimiento del cronograma. Los valores del estándar 5 son una propuesta del grupo.
+> La medición del indicador 1 se realizará con una base de **datos sintéticos** de 500 colaboradores, porque el FODA reconoce como debilidad la falta de un entorno de pruebas equivalente al de producción.
+>
+> Los indicadores 1 a 3 derivan de las metas cuantitativas de la Entrega 2. Los indicadores 4 a 7 se incorporan en esta entrega para cubrir seguridad, calidad de datos, seguimiento del cronograma y autorización de horas extra (el 7 deriva del criterio de aceptación de la HU2). Los valores del estándar 5 son una propuesta del grupo.
 
 ---
 
@@ -182,25 +189,27 @@ El control sigue el ciclo de la etapa de Dirección y Control: **fijar un están
 
 | Entrega | Herramienta | Propósito |
 |---|---|---|
-| 1, 2 y 3 | Gemini | Estructuración de contenidos, redacción formal, diagrama del esquema sistémico, organigrama y diccionario de datos. Detalle en cada PDF. |
-| 4 | Claude | Revision y propuesta de modificacion del `.bpmn` base, borrador de este README y propuesta de indicadores de control. |
+| 1, 2 y 3 | Gemini | Estructuración y redacción de contenidos, esquema sistémico, organigrama, diccionario de datos, matriz FODA y diagrama de Gantt (ver cada declaración). |
+| 4 y consolidación | Claude | Explicación de consignas, plan de trabajo, archivo BPMN base, README, indicadores de control, guía de GitHub, detección de inconsistencias entre entregas y generación de los documentos corregidos. |
 
 ### Prompts utilizados y correcciones humanas
 
-> ⚠️ **Completar con lo que realmente ocurrió.** La cátedra califica como error del grupo cualquier imprecisión del modelo. Los prompts y las correcciones deben coincidir con lo que hicieron.
-
-| N.º | Prompt (resumen) | Por qué se formuló así | Qué devolvió la IA | Corrección humana y justificación |
+| N.º | Prompt (resumen) | Por qué se formuló así | Qué devolvió la IA | Corrección humana |
 |---|---|---|---|---|
-| 1 | COMPLETAR. Ej.: *se subieron las Entregas 1 a 3 y la consigna 4, y se pidió explicar las consignas ambiguas y proponer un plan de trabajo.* | COMPLETAR. Ej.: *dar contexto completo para que el resultado fuera coherente con el caso de estudio y con la rúbrica.* | COMPLETAR | COMPLETAR |
-| 2 | COMPLETAR. Ej.: *se pidió el archivo `.bpmn` del proceso de asistencia para importar en bpmn.io.* | COMPLETAR | Un diagrama con 2 pools, 5 lanes y 4 compuertas de decisión. | COMPLETAR. Ej.: *se revisó la lógica, se ajustó X y se verificó que cada camino termine en un evento de fin.* |
-| 3 | COMPLETAR. Ej.: *se pidió el README completo.* | COMPLETAR | COMPLETAR | COMPLETAR |
+| 1 | Se adjuntaron las Entregas 1 a 3 aprobadas y la consigna de la Entrega 4, y se pidió el texto de presentación, una guía para las actividades y la explicación de las consignas ambiguas. | Se dio el contexto completo para que el resultado fuera coherente con el caso Elpra y con la rúbrica, y no genérico. | Explicación de las consignas, plan de trabajo, textos base, historias de usuario y propuesta de indicadores. También señaló que las historias de usuario no figuraban en las entregas previas. | El grupo contrastó las propuestas con sus entregas y validó las historias de usuario y los estándares a partir de las metas de la Entrega 2. |
+| 2 | Se pidió el archivo .bpmn del proceso de asistencia para importarlo en bpmn.io, y luego el README y la guía de GitHub. | Se eligió bpmn.io por ser gratuita y estándar, y se pidió que el proceso integrara las tres entidades del diccionario. | Un BPMN con 2 pools, 5 lanes y 4 compuertas; un README y una guía paso a paso. | Tras la revisión de coherencia, el grupo solicitó agregar la lane de RR.HH. y el fichaje de egreso. Además, detectó que la ruta indicada para vincular el tablero al repositorio no existía en la interfaz de GitHub; la IA la verificó en la documentación oficial y la corrigió. |
+| 3 | Se pidió revisar las inconsistencias entre las entregas y luego aplicar las decisiones del grupo y generar los PDF corregidos. | La consolidación exige coherencia entre documentos y la cátedra califica los errores del modelo como errores del grupo. | Lista priorizada de inconsistencias, versión 2 del BPMN y documentos corregidos. | El grupo decidió cómo resolver cada punto: fabricación tercerizada con entrega de plomo al fabricante, «unidad de negocios», alcance inicial del diccionario y campos de ampliación futura. |
 
 ### Errores o inconsistencias detectados
 
 | Detalle | Cómo se resolvió |
 |---|---|
-| La Entrega 1 describía una línea propia de ensamblaje de baterías nuevas, mientras que la Entrega 3 define la fabricación como **tercerizada**. | Se unifico criterio y se eliminaron inconsistencias entre las distintas entregas. |
-| COMPLETAR (otros errores o sesgos que hayan encontrado) | COMPLETAR |
+| Las Entregas 1 y 2 describían fabricación propia de baterías, en contradicción con la tercerización de la Entrega 3. | Se unificó con la Entrega 3: Elpra recicla el plomo, lo entrega como materia prima al fabricante externo y comercializa las baterías. Se reescribió la Entrega 1 y se rehízo el esquema sistémico. |
+| La descripción de `id_empleado` en `CAPACITACION_SEGURIDAD` era contradictoria con `estado_aprobacion`. | Se corrigió la descripción y se agregaron `id_registro` y `fecha_realizacion`. |
+| La primera versión del BPMN omitía a RR.HH. y evaluaba las horas extra antes del fichaje de egreso. | Se agregaron la lane de RR.HH. y el fichaje de egreso. |
+| La guía de GitHub indicaba una ruta inexistente para vincular el proyecto al repositorio. | Se verificó en la documentación oficial y se corrigió el procedimiento. |
+
+El detalle completo figura en el *Registro de correcciones* del PDF consolidado.
 
 ### Responsabilidad intelectual
 
