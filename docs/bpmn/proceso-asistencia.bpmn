@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Elpra" targetNamespace="http://bpmn.io/schema/bpmn">
+
+  <bpmn:collaboration id="Collaboration_Elpra">
+    <bpmn:participant id="Participant_Elpra" name="Baterías Elpra S.A." processRef="Process_Asistencia" />
+    <bpmn:participant id="Participant_Proveedor" name="Proveedor de capacitaciones de seguridad (externo)" />
+    <bpmn:messageFlow id="MessageFlow_Renovacion" name="Solicitud de turno de capacitación" sourceRef="Task_GestionarRenovacion" targetRef="Participant_Proveedor" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_Asistencia" name="Registro de asistencia y habilitación para operar en planta" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Elpra">
+      <bpmn:lane id="Lane_Operario" name="Operario">
+        <bpmn:flowNodeRef>StartEvent_Inicio</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Fichar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Rechazado</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Sistema" name="Sistema RR.HH. (automatizado)">
+        <bpmn:flowNodeRef>Task_ValidarLegajo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_LegajoValido</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_VerificarCapacitacion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_CapVigente</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_BloquearCriticos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ParaleloSplit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_MergeCap</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RegistrarAsistencia</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_HorasExtra</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RegistrarHorasExtra</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_MergeHoras</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_CierreMes</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_GenerarReporte</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Jefe" name="Jefe de planta">
+        <bpmn:flowNodeRef>Task_AutorizarHoras</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Autorizadas</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Seguridad" name="Seguridad e Higiene">
+        <bpmn:flowNodeRef>Task_GestionarRenovacion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Renovacion</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Finanzas" name="Finanzas / Liquidación de sueldos">
+        <bpmn:flowNodeRef>Task_Liquidar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Liquidado</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Inicio" name="Inicio de jornada">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Fichar" name="Fichar ingreso">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Rechazado" name="Fichaje rechazado">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:serviceTask id="Task_ValidarLegajo" name="Validar legajo del empleado (LEGAJO_EMPLEADO)">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_LegajoValido" name="¿Legajo válido?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_VerificarCapacitacion" name="Verificar capacitación vigente (CAPACITACION_SEGURIDAD)">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_CapVigente" name="¿Capacitación vigente?">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_BloquearCriticos" name="Bloquear puestos críticos y generar alerta">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:parallelGateway id="Gateway_ParaleloSplit">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:exclusiveGateway id="Gateway_MergeCap">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_RegistrarAsistencia" name="Registrar asistencia (REGISTRO_ASISTENCIA)">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_HorasExtra" name="¿Hubo horas extra?">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="Task_AutorizarHoras" name="Revisar y autorizar horas extra">
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Autorizadas" name="¿Horas autorizadas?">
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+      <bpmn:outgoing>Flow_18</bpmn:outgoing>
+      <bpmn:outgoing>Flow_20</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_RegistrarHorasExtra" name="Registrar horas extra autorizadas">
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+      <bpmn:outgoing>Flow_19</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_MergeHoras">
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+      <bpmn:incoming>Flow_19</bpmn:incoming>
+      <bpmn:incoming>Flow_20</bpmn:incoming>
+      <bpmn:outgoing>Flow_21</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:intermediateCatchEvent id="Event_CierreMes" name="Cierre mensual">
+      <bpmn:incoming>Flow_21</bpmn:incoming>
+      <bpmn:outgoing>Flow_22</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_Cierre" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="Task_GenerarReporte" name="Generar reporte mensual de asistencia y horas extra">
+      <bpmn:incoming>Flow_22</bpmn:incoming>
+      <bpmn:outgoing>Flow_23</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="Task_GestionarRenovacion" name="Gestionar renovación de la capacitación">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Renovacion" name="Renovación gestionada">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:userTask id="Task_Liquidar" name="Liquidar haberes y cargas sociales">
+      <bpmn:incoming>Flow_23</bpmn:incoming>
+      <bpmn:outgoing>Flow_24</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_Liquidado" name="Haberes liquidados">
+      <bpmn:incoming>Flow_24</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Inicio" targetRef="Task_Fichar" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Fichar" targetRef="Task_ValidarLegajo" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_ValidarLegajo" targetRef="Gateway_LegajoValido" />
+    <bpmn:sequenceFlow id="Flow_4" name="No" sourceRef="Gateway_LegajoValido" targetRef="EndEvent_Rechazado" />
+    <bpmn:sequenceFlow id="Flow_5" name="Sí" sourceRef="Gateway_LegajoValido" targetRef="Task_VerificarCapacitacion" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_VerificarCapacitacion" targetRef="Gateway_CapVigente" />
+    <bpmn:sequenceFlow id="Flow_7" name="Sí" sourceRef="Gateway_CapVigente" targetRef="Gateway_MergeCap" />
+    <bpmn:sequenceFlow id="Flow_8" name="No" sourceRef="Gateway_CapVigente" targetRef="Task_BloquearCriticos" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_BloquearCriticos" targetRef="Gateway_ParaleloSplit" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Gateway_ParaleloSplit" targetRef="Task_GestionarRenovacion" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Gateway_ParaleloSplit" targetRef="Gateway_MergeCap" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_GestionarRenovacion" targetRef="EndEvent_Renovacion" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Gateway_MergeCap" targetRef="Task_RegistrarAsistencia" />
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_RegistrarAsistencia" targetRef="Gateway_HorasExtra" />
+    <bpmn:sequenceFlow id="Flow_15" name="Sí" sourceRef="Gateway_HorasExtra" targetRef="Task_AutorizarHoras" />
+    <bpmn:sequenceFlow id="Flow_16" name="No" sourceRef="Gateway_HorasExtra" targetRef="Gateway_MergeHoras" />
+    <bpmn:sequenceFlow id="Flow_17" sourceRef="Task_AutorizarHoras" targetRef="Gateway_Autorizadas" />
+    <bpmn:sequenceFlow id="Flow_18" name="Sí" sourceRef="Gateway_Autorizadas" targetRef="Task_RegistrarHorasExtra" />
+    <bpmn:sequenceFlow id="Flow_19" sourceRef="Task_RegistrarHorasExtra" targetRef="Gateway_MergeHoras" />
+    <bpmn:sequenceFlow id="Flow_20" name="No" sourceRef="Gateway_Autorizadas" targetRef="Gateway_MergeHoras" />
+    <bpmn:sequenceFlow id="Flow_21" sourceRef="Gateway_MergeHoras" targetRef="Event_CierreMes" />
+    <bpmn:sequenceFlow id="Flow_22" sourceRef="Event_CierreMes" targetRef="Task_GenerarReporte" />
+    <bpmn:sequenceFlow id="Flow_23" sourceRef="Task_GenerarReporte" targetRef="Task_Liquidar" />
+    <bpmn:sequenceFlow id="Flow_24" sourceRef="Task_Liquidar" targetRef="EndEvent_Liquidado" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_Elpra">
+
+      <!-- Pools y lanes -->
+      <bpmndi:BPMNShape id="Participant_Elpra_di" bpmnElement="Participant_Elpra" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="2000" height="680" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Operario_di" bpmnElement="Lane_Operario" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1970" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Sistema_di" bpmnElement="Lane_Sistema" isHorizontal="true">
+        <dc:Bounds x="190" y="200" width="1970" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Jefe_di" bpmnElement="Lane_Jefe" isHorizontal="true">
+        <dc:Bounds x="190" y="400" width="1970" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Seguridad_di" bpmnElement="Lane_Seguridad" isHorizontal="true">
+        <dc:Bounds x="190" y="520" width="1970" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Finanzas_di" bpmnElement="Lane_Finanzas" isHorizontal="true">
+        <dc:Bounds x="190" y="640" width="1970" height="120" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_Proveedor_di" bpmnElement="Participant_Proveedor" isHorizontal="true">
+        <dc:Bounds x="160" y="800" width="2000" height="60" />
+      </bpmndi:BPMNShape>
+
+      <!-- Lane Operario -->
+      <bpmndi:BPMNShape id="StartEvent_Inicio_di" bpmnElement="StartEvent_Inicio">
+        <dc:Bounds x="240" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="215" y="165" width="86" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Fichar_di" bpmnElement="Task_Fichar">
+        <dc:Bounds x="330" y="100" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Rechazado_di" bpmnElement="EndEvent_Rechazado">
+        <dc:Bounds x="477" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="450" y="88" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane Sistema -->
+      <bpmndi:BPMNShape id="Task_ValidarLegajo_di" bpmnElement="Task_ValidarLegajo">
+        <dc:Bounds x="330" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_LegajoValido_di" bpmnElement="Gateway_LegajoValido" isMarkerVisible="true">
+        <dc:Bounds x="470" y="235" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="450" y="290" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_VerificarCapacitacion_di" bpmnElement="Task_VerificarCapacitacion">
+        <dc:Bounds x="580" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_CapVigente_di" bpmnElement="Gateway_CapVigente" isMarkerVisible="true">
+        <dc:Bounds x="725" y="235" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="705" y="205" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_BloquearCriticos_di" bpmnElement="Task_BloquearCriticos">
+        <dc:Bounds x="700" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ParaleloSplit_di" bpmnElement="Gateway_ParaleloSplit">
+        <dc:Bounds x="830" y="325" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_MergeCap_di" bpmnElement="Gateway_MergeCap" isMarkerVisible="true">
+        <dc:Bounds x="930" y="235" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RegistrarAsistencia_di" bpmnElement="Task_RegistrarAsistencia">
+        <dc:Bounds x="1020" y="220" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_HorasExtra_di" bpmnElement="Gateway_HorasExtra" isMarkerVisible="true">
+        <dc:Bounds x="1165" y="235" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1145" y="205" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RegistrarHorasExtra_di" bpmnElement="Task_RegistrarHorasExtra">
+        <dc:Bounds x="1375" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_MergeHoras_di" bpmnElement="Gateway_MergeHoras" isMarkerVisible="true">
+        <dc:Bounds x="1700" y="325" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_CierreMes_di" bpmnElement="Event_CierreMes">
+        <dc:Bounds x="1792" y="332" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1773" y="372" width="74" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GenerarReporte_di" bpmnElement="Task_GenerarReporte">
+        <dc:Bounds x="1910" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
+
+      <!-- Lane Jefe -->
+      <bpmndi:BPMNShape id="Task_AutorizarHoras_di" bpmnElement="Task_AutorizarHoras">
+        <dc:Bounds x="1230" y="420" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Autorizadas_di" bpmnElement="Gateway_Autorizadas" isMarkerVisible="true">
+        <dc:Bounds x="1400" y="435" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1380" y="490" width="90" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane Seguridad -->
+      <bpmndi:BPMNShape id="Task_GestionarRenovacion_di" bpmnElement="Task_GestionarRenovacion">
+        <dc:Bounds x="805" y="540" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Renovacion_di" bpmnElement="EndEvent_Renovacion">
+        <dc:Bounds x="987" y="562" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="962" y="602" width="86" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Lane Finanzas -->
+      <bpmndi:BPMNShape id="Task_Liquidar_di" bpmnElement="Task_Liquidar">
+        <dc:Bounds x="1910" y="660" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Liquidado_di" bpmnElement="EndEvent_Liquidado">
+        <dc:Bounds x="2062" y="682" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="2037" y="722" width="86" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Flujos de secuencia -->
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="276" y="140" /><di:waypoint x="330" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="380" y="180" /><di:waypoint x="380" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="430" y="260" /><di:waypoint x="470" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="495" y="235" /><di:waypoint x="495" y="158" />
+        <bpmndi:BPMNLabel><dc:Bounds x="502" y="190" width="20" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="520" y="260" /><di:waypoint x="580" y="260" />
+        <bpmndi:BPMNLabel><dc:Bounds x="540" y="242" width="14" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="680" y="260" /><di:waypoint x="725" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="775" y="260" /><di:waypoint x="930" y="260" />
+        <bpmndi:BPMNLabel><dc:Bounds x="840" y="242" width="14" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="750" y="285" /><di:waypoint x="750" y="310" />
+        <bpmndi:BPMNLabel><dc:Bounds x="757" y="290" width="20" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="800" y="350" /><di:waypoint x="830" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="855" y="375" /><di:waypoint x="855" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="880" y="350" /><di:waypoint x="955" y="350" /><di:waypoint x="955" y="285" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="905" y="580" /><di:waypoint x="987" y="580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="980" y="260" /><di:waypoint x="1020" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="1120" y="260" /><di:waypoint x="1165" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15">
+        <di:waypoint x="1190" y="285" /><di:waypoint x="1190" y="460" /><di:waypoint x="1230" y="460" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1197" y="300" width="14" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <di:waypoint x="1215" y="260" /><di:waypoint x="1725" y="260" /><di:waypoint x="1725" y="325" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1230" y="242" width="20" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17_di" bpmnElement="Flow_17">
+        <di:waypoint x="1330" y="460" /><di:waypoint x="1400" y="460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18_di" bpmnElement="Flow_18">
+        <di:waypoint x="1425" y="435" /><di:waypoint x="1425" y="390" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1432" y="405" width="14" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19_di" bpmnElement="Flow_19">
+        <di:waypoint x="1475" y="350" /><di:waypoint x="1700" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_20_di" bpmnElement="Flow_20">
+        <di:waypoint x="1450" y="460" /><di:waypoint x="1725" y="460" /><di:waypoint x="1725" y="375" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1462" y="442" width="20" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_21_di" bpmnElement="Flow_21">
+        <di:waypoint x="1750" y="350" /><di:waypoint x="1792" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_22_di" bpmnElement="Flow_22">
+        <di:waypoint x="1828" y="350" /><di:waypoint x="1910" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_23_di" bpmnElement="Flow_23">
+        <di:waypoint x="1960" y="390" /><di:waypoint x="1960" y="660" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_24_di" bpmnElement="Flow_24">
+        <di:waypoint x="2010" y="700" /><di:waypoint x="2062" y="700" />
+      </bpmndi:BPMNEdge>
+
+      <!-- Flujo de mensaje entre pools -->
+      <bpmndi:BPMNEdge id="MessageFlow_Renovacion_di" bpmnElement="MessageFlow_Renovacion">
+        <di:waypoint x="855" y="620" /><di:waypoint x="855" y="800" />
+        <bpmndi:BPMNLabel><dc:Bounds x="865" y="760" width="120" height="27" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
